@@ -1,6 +1,6 @@
 package View;
 import Controller.*;
-import Model.SaveFileAsPdf;
+import Model.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,9 +9,13 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.sql.Connection;
+import com.swabunga.spell.event.SpellChecker;
+import com.swabunga.spell.event.StringWordTokenizer;
 
 public class NewDocument extends JFrame {
     private final JMenuItem saveToDatabase;
+
+    JButton checkSpellingBtn;
     JPanel southPanel; //At south of frame to add buttons to implement functionalities.
     JButton applyColorBtn; // to apply color using color chooser
     JMenuBar menuBar;
@@ -32,6 +36,8 @@ public class NewDocument extends JFrame {
     private Connection connection;
     private String userName, documentName;
     public NewDocument(Connection conn, final String userName){
+       // spellCheckerWrapper = new SpellCheckerWrapper();
+
         this.userName = userName;
         this.connection = conn;
         this.menuBar = new JMenuBar(); // to make navigation bar.
@@ -121,6 +127,7 @@ public class NewDocument extends JFrame {
             @Override
             public void keyReleased(KeyEvent e) {
                 setTitle("File - Unsaved Changes");
+              //  checkSpelling();
             }
         });
 
@@ -151,7 +158,7 @@ public class NewDocument extends JFrame {
         southPanel.add(applyColorBtn);
         this.add(southPanel, BorderLayout.SOUTH);
 
-        this.addWindowListener(new WindowAdapter() { //to remove this frame on click cross button.
+        this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 dispose();
@@ -170,6 +177,16 @@ public class NewDocument extends JFrame {
         this.saveToDatabase = new JMenuItem("Save");
         this.saveToDatabase.addActionListener(new SaveToDatabaseActionListener(this));
         this.menuBar.add(this.saveToDatabase);
+
+        checkSpellingBtn = new JButton("Check Spelling");
+        checkSpellingBtn.addActionListener(new CheckSpellingActionListener(this));
+
+        southPanel.add(checkSpellingBtn);
+
+        WordCountActionListener wordCountListener = new WordCountActionListener(this);
+        JMenuItem wordCountItem = new JMenuItem("Word Count");
+        wordCountItem.addActionListener(wordCountListener);
+        this.menuBar.add(wordCountItem);
 
     }
 
@@ -207,5 +224,8 @@ public class NewDocument extends JFrame {
             setTitle("File - Unsaved Changes");
         }
     }
+
+
+
 
 }
