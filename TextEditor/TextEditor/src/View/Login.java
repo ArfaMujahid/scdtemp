@@ -4,6 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,48 +31,80 @@ public class Login extends JFrame implements ActionListener {
         l3 = new JLabel("Don't have an account?");
         uName = new JTextField(20);
         pass = new JPasswordField(20);
-        JPanel jp1 = new JPanel(new FlowLayout());
-        jp1.add(l1);
-        jp1.add(uName);
-        JPanel jp2 = new JPanel(new FlowLayout());
-        jp2.add(l2);
-        jp2.add(pass);
+
+        // Set up the left panel with a GridBagLayout
+        p1 = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        gbc.insets = new Insets(0, 0, 20, 0); // Add spacing between components
+
+        p1.add(l1, gbc);
+        p1.add(uName, gbc);
+        p1.add(l2, gbc);
+        p1.add(pass, gbc);
+        p1.add(l3, gbc);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout());
         login = new JButton("Login");
         login.addActionListener(this);
-        JPanel jp3 = new JPanel(new FlowLayout());
-        jp3.add(login);
         signUp = new JButton("SignUp");
         signUp.addActionListener(this);
-        JPanel jp4 = new JPanel(new FlowLayout());
-        jp4.add(l3);
-        jp4.add(signUp);
-        p1 = new JPanel();
-        p1.setLayout(new BoxLayout(p1, BoxLayout.Y_AXIS));
-        p1.add(jp1);
-        p1.add(jp2);
-        p1.add(jp3);
-        p1.add(jp4);
 
-        //Frame
-        setLayout(new GridLayout(3, 1));
-        add(new JPanel());
-        add(p1);
+        // Set text color to white
+        login.setForeground(Color.WHITE);
+        signUp.setForeground(Color.WHITE);
+
+        login.setBackground(new Color(39, 66, 122));
+        signUp.setBackground(new Color(39, 66, 122));
+
+        buttonPanel.add(login);
+        buttonPanel.add(signUp);
+
+        p1.add(buttonPanel, gbc);
+
+        p1.setBackground(new Color(255, 240, 245)); // Lavender Blush
+
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setBackground(Color.WHITE);
+        JLabel smartScriptLabel = new JLabel("SmartScript");
+        smartScriptLabel.setHorizontalAlignment(JLabel.CENTER);
+        smartScriptLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        smartScriptLabel.setForeground(Color.WHITE);
+        JPanel smartScriptPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 180));
+        smartScriptPanel.setBackground(new Color(39, 66, 122));
+        smartScriptPanel.add(smartScriptLabel);
+        rightPanel.add(smartScriptPanel, BorderLayout.CENTER);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, p1, rightPanel);
+        splitPane.setDividerLocation(300);
+
+        setLayout(new GridLayout(1, 1));
+        add(splitPane);
         setTitle("Login Page");
-        setVisible(true);
-        setSize(500, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 600);
         setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setVisible(true);
     }
 
-    //---------------------------------------------------------------------------------------------------------
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getActionCommand() == "SignUp") {
+            dispose();
             SignUp signUp1 = new SignUp();
             signUp1.createSignUpPage(connection);
-        } else {
+        } else if (e.getActionCommand().equals("Login")) {
             try {
-                if (checkLoginCredentials()) {
+                if (uName.getText().equals(null) || uName.getText().equals("")) {
+                    JOptionPane.showMessageDialog(this, "Fields empty!");
+                    return;
+                }
+                if (pass.getPassword().equals(null) || pass.getPassword().equals("")) {
+                    JOptionPane.showMessageDialog(this, "Fields empty!");
+                    return;
+                }
+                if (checkLoginCredentials() == true) {
+                    JOptionPane.showMessageDialog(this, "Login Successful!");
                     OptionsFrame optionsFrame = new OptionsFrame(connection, name);
                     optionsFrame.display();
                     dispose();
@@ -83,7 +117,6 @@ public class Login extends JFrame implements ActionListener {
         }
     }
 
-    //---------------------------------------------------------------------------------------------------------
     private boolean checkLoginCredentials() throws SQLException {
         String query = "select * from users;";
         Statement statement = connection.createStatement();
@@ -100,5 +133,4 @@ public class Login extends JFrame implements ActionListener {
         }
         return false;
     }
-    //---------------------------------------------------------------------------------------------------------
 }
